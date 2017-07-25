@@ -33,8 +33,6 @@ namespace Cards
 
     class Program
     {
-        // Maximum number of cards in a deck for this game.
-        const int MAX_CARDS_IN_DECK = 36;
         // Maximum number of cards that player can get to receive <=21 points.
         const int MAX_CARDS_IN_HAND = 8;
         // Maximum amount of points, until computer will continue playing.
@@ -42,19 +40,22 @@ namespace Cards
 
         static void Main(string[] args)
         {
-
-            Deck Deck = new Deck();
-            Deck.Cards = new Card[MAX_CARDS_IN_DECK];
-
-            Random random = new Random();
-
             int suitsLength = Enum.GetValues(typeof(Suits)).Length;
             int raitingsLength = Enum.GetValues(typeof(Ratings)).Length;
+
+            // Number of cards in a deck for this game.
+            int cardsInDeck = suitsLength * raitingsLength;
+
+            Deck Deck = new Deck();
+            Deck.Cards = new Card[cardsInDeck];
+
+            Random random = new Random();
 
             // Generate an ordered deck
 
             for (int s = 0; s < suitsLength; s++)
             {
+                // Var i helps to switch to another suit when all ratings for the current suit are already in the deck
                 int i = s * raitingsLength;
 
                 for (int r = 0; r < raitingsLength; r++)
@@ -67,14 +68,13 @@ namespace Cards
             }
 
             string next = "";
-            int wins1 = 0;
-            int wins2 = 0;
+            int winsHuman = 0;
+            int winsComp = 0;
             int deadheat = 0;
 
             do
             {
                 // Shuffle deck
-
                 for (int i = Deck.Cards.Length - 1; i >= 1; i--)
                 {
                     int j = random.Next(i + 1);
@@ -85,86 +85,84 @@ namespace Cards
 
                 // Start the game
 
-                string player_raw = "";
+                string player = "";
 
                 do
                 {
                     Console.WriteLine("Who does receive the cards first? Enter 1 if you, enter 2 if computer.");
-                    player_raw = Console.ReadLine();
+                    player = Console.ReadLine();
                 }
-                while (player_raw != "1" && player_raw != "2");
+                while (player != "1" && player != "2");
 
-                int player = int.Parse(player_raw);
+                Deck DealHuman = new Deck();
+                DealHuman.Cards = new Card[MAX_CARDS_IN_HAND];
 
-                Deck Rasklad1 = new Deck();
-                Rasklad1.Cards = new Card[MAX_CARDS_IN_HAND];
+                Deck DealComp = new Deck();
+                DealComp.Cards = new Card[MAX_CARDS_IN_HAND];
 
-                Deck Rasklad2 = new Deck();
-                Rasklad2.Cards = new Card[MAX_CARDS_IN_HAND];
-
-                int score1 = 0;
-                int score2 = 0;
+                int scoreHuman = 0;
+                int scoreComp = 0;
                 int cartcounter = 4;
-                int rasklad1Length = 2;
-                int rasklad2Length = 2;
+                int dealHumanLength = 2;
+                int dealCompLength = 2;
 
                 // Human receives first cards
 
-                if (player == 1)
+                if (player == "1")
                 {
-                    for (int i = 0; i < rasklad1Length; i++)
+                    for (int i = 0; i < dealHumanLength; i++)
                     {
-                        Rasklad1.Cards[i] = Deck.Cards[i];
-                        score1 += (int)Rasklad1.Cards[i].Rating;
+                        DealHuman.Cards[i] = Deck.Cards[i];
+                        scoreHuman += (int)DealHuman.Cards[i].Rating;
 
                         Console.WriteLine("--- Your Card " + (i + 1) + " ---");
-                        Console.WriteLine(Rasklad1.Cards[i].Suit);
-                        Console.WriteLine(Rasklad1.Cards[i].Rating);
+                        Console.WriteLine(DealHuman.Cards[i].Suit);
+                        Console.WriteLine(DealHuman.Cards[i].Rating);
                     }
 
                     Console.WriteLine("----------");
-                    Console.WriteLine("Your score: " + score1);
+                    Console.WriteLine("Your score: " + scoreHuman);
                     Console.WriteLine("----------");
 
-                    for (int i = 0; i < rasklad2Length; i++)
+                    for (int i = 0; i < dealCompLength; i++)
                     {
-                        Rasklad2.Cards[i] = Deck.Cards[i + rasklad1Length];
-                        score2 += (int)Rasklad2.Cards[i].Rating;
+                        DealComp.Cards[i] = Deck.Cards[i + dealHumanLength];
+                        scoreComp += (int)DealComp.Cards[i].Rating;
 
                         Console.WriteLine("--- Computer Card " + (i + 1) + " ---");
-                        Console.WriteLine(Rasklad2.Cards[i].Suit);
-                        Console.WriteLine(Rasklad2.Cards[i].Rating);
+                        Console.WriteLine(DealComp.Cards[i].Suit);
+                        Console.WriteLine(DealComp.Cards[i].Rating);
                     }
 
                     Console.WriteLine("----------");
-                    Console.WriteLine("Computer score: " + score2);
+                    Console.WriteLine("Computer score: " + scoreComp);
                     Console.WriteLine("----------");
 
-                    if (score1 == score2 && score1 == 21)
+                    if (scoreHuman == scoreComp && scoreHuman == 21)
                     {
                         Console.WriteLine("Dead heat!");
                         deadheat++;
                     }
                     else if (
-                        score1 == 21 ||
-                        (Rasklad1.Cards[0].Rating == Ratings.Ace && Rasklad1.Cards[1].Rating == Ratings.Ace)
+                        scoreHuman == 21 ||
+                        (DealHuman.Cards[0].Rating == Ratings.Ace && DealHuman.Cards[1].Rating == Ratings.Ace)
                     )
                     {
                         Console.WriteLine("----------");
                         Console.WriteLine("The Game is over!");
                         Console.WriteLine("----------");
                         Console.WriteLine("You won!");
-                        wins1++;
+                        winsHuman++;
                     }
                     else if (
-                        score2 == 21 ||
-                        (Rasklad2.Cards[0].Rating == Ratings.Ace && Rasklad2.Cards[1].Rating == Ratings.Ace)
+                        scoreComp == 21 ||
+                        (DealComp.Cards[0].Rating == Ratings.Ace && DealComp.Cards[1].Rating == Ratings.Ace)
                     )
                     {
                         Console.WriteLine("The Game is over!");
                         Console.WriteLine("----------");
                         Console.WriteLine("Computer won!");
-                        wins2++;
+                        winsComp++;
                     }
                     else
                     {
@@ -179,25 +177,25 @@ namespace Cards
                         // Aks whether to get a new card until user stops or points >= 21.
                         while (answer != "N" && answer != "n")
                         {
-                            Rasklad1.Cards[rasklad1Length] = Deck.Cards[cartcounter];
+                            DealHuman.Cards[dealHumanLength] = Deck.Cards[cartcounter];
                             cartcounter++;
-                            score1 += (int)Rasklad1.Cards[rasklad1Length].Rating;
-                            rasklad1Length++;
+                            scoreHuman += (int)DealHuman.Cards[dealHumanLength].Rating;
+                            dealHumanLength++;
 
-                            for (int i = 0; i < rasklad1Length; i++)
+                            for (int i = 0; i < dealHumanLength; i++)
                             {
                                 Console.WriteLine("--- Your Card " + (i + 1) + " ---");
-                                Console.WriteLine(Rasklad1.Cards[i].Suit);
-                                Console.WriteLine(Rasklad1.Cards[i].Rating);
+                                Console.WriteLine(DealHuman.Cards[i].Suit);
+                                Console.WriteLine(DealHuman.Cards[i].Rating);
                             }
 
                             Console.WriteLine("----------");
-                            Console.WriteLine("Your score: " + score1);
+                            Console.WriteLine("Your score: " + scoreHuman);
                             Console.WriteLine("----------");
 
-                            if (score1 >= 21)
+                            if (scoreHuman >= 21)
                             {
-                                Console.WriteLine("||||||||| You've received " + score1 + " points. Now it is a computer turn. ||||||||| ");
+                                Console.WriteLine("||||||||| You've received " + scoreHuman + " points. Now it is a computer turn. ||||||||| ");
                                 Console.WriteLine("Press enter to continue...");
                                 Console.ReadLine();
                                 break;
@@ -209,132 +207,141 @@ namespace Cards
                             }
                         }
 
-                        while (score2 <= MAX_POINTS_TO_CONTINUE_PLAYING)
+                        while (scoreComp <= MAX_POINTS_TO_CONTINUE_PLAYING)
                         {
                             Console.WriteLine("----------");
                             Console.WriteLine("Computer has decided to receive one more card.");
                             Console.WriteLine("----------");
 
-                            Rasklad2.Cards[rasklad2Length] = Deck.Cards[cartcounter];
+                            DealComp.Cards[dealCompLength] = Deck.Cards[cartcounter];
                             cartcounter++;
-                            score2 += (int)Rasklad2.Cards[rasklad2Length].Rating;
-                            rasklad1Length++;
+                            scoreComp += (int)DealComp.Cards[dealCompLength].Rating;
+                            dealHumanLength++;
 
-                            for (int i = 0; i < rasklad2Length + 1; i++)
+                            for (int i = 0; i < dealCompLength + 1; i++)
                             {
                                 Console.WriteLine("--- Computer card: " + (i + 1) + " ---");
-                                Console.WriteLine(Rasklad2.Cards[i].Suit);
-                                Console.WriteLine(Rasklad2.Cards[i].Rating);
+                                Console.WriteLine(DealComp.Cards[i].Suit);
+                                Console.WriteLine(DealComp.Cards[i].Rating);
                             }
 
                             Console.WriteLine("----------");
-                            Console.WriteLine("Computer score: " + score2);
+                            Console.WriteLine("Computer score: " + scoreComp);
                             Console.WriteLine("----------");
-                            rasklad2Length++;
+                            dealCompLength++;
                         }
 
-                        if (score1 == score2)
+                        if (scoreHuman == scoreComp)
                         {
                             Console.WriteLine("Dead heat!");
                             deadheat++;
                         }
                         else if (
-                            (score1 == 21) ||
-                            (score1 > 21 && score2 > 21 && score1 < score2) ||
-                            (score1 < 21 && score2 < 21 && score1 > score2) ||
-                            (score1 < 21 && score2 > 21)
+                            (scoreHuman == 21) ||
+                            (scoreHuman > 21 && scoreComp > 21 && scoreHuman < scoreComp) ||
+                            (scoreHuman < 21 && scoreComp < 21 && scoreHuman > scoreComp) ||
+                            (scoreHuman < 21 && scoreComp > 21)
                         )
                         {
                             Console.WriteLine("You won!");
-                            wins1++;
+                            winsHuman++;
                         }
                         else
                         {
                             Console.WriteLine("Computer won!");
-                            wins2++;
+                            winsComp++;
                         }
                     }
                 }
 
                 // Computer receives first cards.
-                if (player == 2)
+                else
                 {
-                    for (int i = 0; i < rasklad2Length; i++)
+                    for (int i = 0; i < dealCompLength; i++)
                     {
-                        Rasklad2.Cards[i] = Deck.Cards[i];
-                        score2 += (int)Rasklad2.Cards[i].Rating;
+                        DealComp.Cards[i] = Deck.Cards[i];
+                        scoreComp += (int)DealComp.Cards[i].Rating;
 
                         Console.WriteLine("--- Computer Card " + (i + 1) + " ---");
-                        Console.WriteLine(Rasklad2.Cards[i].Suit);
-                        Console.WriteLine(Rasklad2.Cards[i].Rating);
+                        Console.WriteLine(DealComp.Cards[i].Suit);
+                        Console.WriteLine(DealComp.Cards[i].Rating);
                     }
 
                     Console.WriteLine("----------");
-                    Console.WriteLine("Computer score: " + score2);
+                    Console.WriteLine("Computer score: " + scoreComp);
                     Console.WriteLine("----------");
 
-                    for (int i = 0; i < rasklad1Length; i++)
+                    for (int i = 0; i < dealHumanLength; i++)
                     {
-                        Rasklad1.Cards[i] = Deck.Cards[i + rasklad2Length];
-                        score1 += (int)Rasklad1.Cards[i].Rating;
+                        DealHuman.Cards[i] = Deck.Cards[i + dealCompLength];
+                        scoreHuman += (int)DealHuman.Cards[i].Rating;
 
                         Console.WriteLine("--- Your Card " + (i + 1) + " ---");
-                        Console.WriteLine(Rasklad1.Cards[i].Suit);
-                        Console.WriteLine(Rasklad1.Cards[i].Rating);
+                        Console.WriteLine(DealHuman.Cards[i].Suit);
+                        Console.WriteLine(DealHuman.Cards[i].Rating);
                     }
 
                     Console.WriteLine("----------");
-                    Console.WriteLine("Your score: " + score1);
+                    Console.WriteLine("Your score: " + scoreHuman);
                     Console.WriteLine("----------");
 
-                    if (score1 == score2 && score1 == 21)
+                    if (scoreHuman == scoreComp && scoreHuman == 21)
                     {
                         Console.WriteLine("Dead heat!");
                         deadheat++;
                     }
                     else if (
-                        score1 == 21 ||
-                        (Rasklad1.Cards[0].Rating == Ratings.Ace && Rasklad1.Cards[1].Rating == Ratings.Ace)
+                        scoreHuman == 21 ||
+                        (DealHuman.Cards[0].Rating == Ratings.Ace && DealHuman.Cards[1].Rating == Ratings.Ace)
                     )
                     {
                         Console.WriteLine("The Game is over!");
                         Console.WriteLine("----------");
                         Console.WriteLine("You won!");
-                        wins1++;
+                        winsHuman++;
                     }
-                    else if (score2 == 21 || (Rasklad2.Cards[0].Rating == Ratings.Ace) && (Rasklad2.Cards[1].Rating == Ratings.Ace))
+                    else if (scoreComp == 21 || (DealComp.Cards[0].Rating == Ratings.Ace) && (DealComp.Cards[1].Rating == Ratings.Ace))
                     {
                         Console.WriteLine("----------");
                         Console.WriteLine("The Game is over!");
                         Console.WriteLine("----------");
                         Console.WriteLine("Computer won!");
-                        wins2++;
+                        winsComp++;
                     }
 
                     else
                     {
-                        while (score2 <= MAX_POINTS_TO_CONTINUE_PLAYING)
+                        while (scoreComp <= MAX_POINTS_TO_CONTINUE_PLAYING)
                         {
                             Console.WriteLine("Computer has decided to receive one more card.");
                             Console.WriteLine("----------");
 
-                            Rasklad2.Cards[rasklad2Length] = Deck.Cards[cartcounter];
+                            DealComp.Cards[dealCompLength] = Deck.Cards[cartcounter];
                             cartcounter++;
-                            score2 += (int)Rasklad2.Cards[rasklad2Length].Rating;
+                            scoreComp += (int)DealComp.Cards[dealCompLength].Rating;
 
-                            for (int i = 0; i < rasklad2Length + 1; i++)
+                            for (int i = 0; i < dealCompLength + 1; i++)
                             {
                                 Console.WriteLine("--- Computer card " + (i + 1) + " ---");
-                                Console.WriteLine(Rasklad2.Cards[i].Suit);
-                                Console.WriteLine(Rasklad2.Cards[i].Rating);
+                                Console.WriteLine(DealComp.Cards[i].Suit);
+                                Console.WriteLine(DealComp.Cards[i].Rating);
                             }
                             Console.WriteLine("----------");
-                            Console.WriteLine("Computer score: " + score2);
+                            Console.WriteLine("Computer score: " + scoreComp);
                             Console.WriteLine("----------");
-                            rasklad2Length++;
+                            dealCompLength++;
                         }
 
                         Console.WriteLine("Computer has stopped receiving cards. Now it is your turn!");
+                        Console.WriteLine("----------");
+
+                        for (int i = 0; i < dealHumanLength; i++)
+                        {
+                            Console.WriteLine("--- Your Card " + (i + 1) + " ---");
+                            Console.WriteLine(DealHuman.Cards[i].Suit);
+                            Console.WriteLine(DealHuman.Cards[i].Rating);
+                        }
+
                         string answer = "";
 
                         do
@@ -347,25 +354,25 @@ namespace Cards
 
                         while (answer != "N" && answer != "n")
                         {
-                            Rasklad1.Cards[rasklad1Length] = Deck.Cards[cartcounter];
+                            DealHuman.Cards[dealHumanLength] = Deck.Cards[cartcounter];
                             cartcounter++;
-                            score1 += (int)Rasklad1.Cards[rasklad1Length].Rating;
-                            rasklad1Length++;
+                            scoreHuman += (int)DealHuman.Cards[dealHumanLength].Rating;
+                            dealHumanLength++;
 
-                            for (int i = 0; i < rasklad1Length; i++)
+                            for (int i = 0; i < dealHumanLength; i++)
                             {
                                 Console.WriteLine("--- Your Card " + (i + 1) + " ---");
-                                Console.WriteLine(Rasklad1.Cards[i].Suit);
-                                Console.WriteLine(Rasklad1.Cards[i].Rating);
+                                Console.WriteLine(DealHuman.Cards[i].Suit);
+                                Console.WriteLine(DealHuman.Cards[i].Rating);
                             }
 
                             Console.WriteLine("----------");
-                            Console.WriteLine("Your score: " + score1);
+                            Console.WriteLine("Your score: " + scoreHuman);
                             Console.WriteLine("----------");
 
-                            if (score1 >= 21)
+                            if (scoreHuman >= 21)
                             {
-                                Console.WriteLine("||||||||| You've receive " + score1 + " points. ||||||||| ");
+                                Console.WriteLine("||||||||| You've receive " + scoreHuman + " points. ||||||||| ");
                                 Console.WriteLine("Press enter to continue...");
                                 Console.ReadLine();
                                 break;
@@ -377,25 +384,25 @@ namespace Cards
                             }
                         }
 
-                        if (score1 == score2)
+                        if (scoreHuman == scoreComp)
                         {
                             Console.WriteLine("Dead heat!");
                             deadheat++;
                         }
                         else if (
-                            (score1 == 21) ||
-                            (score1 > 21 && score2 > 21 && score1 < score2) ||
-                            (score1 < 21 && score2 < 21 && score1 > score2) ||
-                            (score1 < 21 && score2 > 21)
+                            (scoreHuman == 21) ||
+                            (scoreHuman > 21 && scoreComp > 21 && scoreHuman < scoreComp) ||
+                            (scoreHuman < 21 && scoreComp < 21 && scoreHuman > scoreComp) ||
+                            (scoreHuman < 21 && scoreComp > 21)
                         )
                         {
                             Console.WriteLine("You won!");
-                            wins1++;
+                            winsHuman++;
                         }
                         else
                         {
                             Console.WriteLine("Computer won!");
-                            wins2++;
+                            winsComp++;
                         }
                     }
                 }
@@ -409,7 +416,7 @@ namespace Cards
 
             } while (next != "N" && next != "n");
 
-            Console.WriteLine("You won " + wins1 + " time(s), computer won " + wins2 + " time(s). Dead heat occurred " + deadheat + " time(s).");
+            Console.WriteLine("You won " + winsHuman + " time(s), computer won " + winsComp + " time(s). Dead heat occurred " + deadheat + " time(s).");
             Console.WriteLine();
         }
     }
