@@ -49,21 +49,24 @@ namespace Cards
             Deck Deck = new Deck();
             Deck.Cards = new Card[cardsInDeck];
 
+            Suits[] cardSuits = (Suits[])Enum.GetValues(typeof(Suits));
+            Ratings[] cardRatings = (Ratings[])Enum.GetValues(typeof(Ratings));
+
             Random random = new Random();
 
             // Generate an ordered deck
 
             for (int s = 0; s < suitsLength; s++)
             {
-                // Var i helps to switch to another suit when all ratings for the current suit are already in the deck
-                int i = s * raitingsLength;
+                // Var 'suitswitcher' helps to switch to another suit when all ratings for the current suit are already in the deck
+                int suitswitcher = s * raitingsLength;
 
                 for (int r = 0; r < raitingsLength; r++)
                 {
-                    Deck.Cards[i].Suit = (Suits)Enum.GetValues(typeof(Suits)).GetValue(s);
-                    Deck.Cards[i].Rating = (Ratings)Enum.GetValues(typeof(Ratings)).GetValue(r);
+                    Deck.Cards[suitswitcher].Suit = cardSuits[s];
+                    Deck.Cards[suitswitcher].Rating = cardRatings[r];
 
-                    i++;
+                    suitswitcher++;
                 }
             }
 
