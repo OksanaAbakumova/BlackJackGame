@@ -40,17 +40,17 @@ namespace Cards
 
         static void Main(string[] args)
         {
-            int suitsLength = Enum.GetValues(typeof(Suits)).Length;
-            int raitingsLength = Enum.GetValues(typeof(Ratings)).Length;
+            Suits[] cardSuits = (Suits[])Enum.GetValues(typeof(Suits));
+            Ratings[] cardRatings = (Ratings[])Enum.GetValues(typeof(Ratings));
+
+            int suitsLength = cardSuits.Length;
+            int raitingsLength = cardRatings.Length;
 
             // Number of cards in a deck for this game.
             int cardsInDeck = suitsLength * raitingsLength;
 
             Deck Deck = new Deck();
             Deck.Cards = new Card[cardsInDeck];
-
-            Suits[] cardSuits = (Suits[])Enum.GetValues(typeof(Suits));
-            Ratings[] cardRatings = (Ratings[])Enum.GetValues(typeof(Ratings));
 
             Random random = new Random();
 
